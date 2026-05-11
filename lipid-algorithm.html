@@ -191,30 +191,55 @@ input[type=number]:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 
 
 <!-- SECONDARY -->
 <div id="sec" class="hidden">
+
+  <!-- Section A: Major events -->
   <div class="card" id="s2-sec">
     <div class="card-head">
       <div class="snum">2</div>
       <div>
-        <div class="card-title">Very high risk screen</div>
-        <div class="card-sub">Check all that apply — any one criterion qualifies</div>
+        <div class="card-title">Major ASCVD events</div>
+        <div class="card-sub">Check all that have occurred — count determines next step</div>
       </div>
     </div>
     <div class="card-body">
-      <div class="checklist" id="vhr-list">
-        <label class="ck" onclick="ckToggle(this,'vhr')"><div class="ck-box">✓</div><span class="ck-text">Recent ACS or recent MI</span></label>
-        <label class="ck" onclick="ckToggle(this,'vhr')"><div class="ck-box">✓</div><span class="ck-text">Recurrent ASCVD events</span></label>
-        <label class="ck" onclick="ckToggle(this,'vhr')"><div class="ck-box">✓</div><span class="ck-text">Polyvascular disease — ASCVD in ≥2 vascular territories</span></label>
-        <label class="ck" onclick="ckToggle(this,'vhr')"><div class="ck-box">✓</div><span class="ck-text">ASCVD + Diabetes mellitus</span></label>
-        <label class="ck" onclick="ckToggle(this,'vhr')"><div class="ck-box">✓</div><span class="ck-text">ASCVD + CKD</span></label>
-        <label class="ck" onclick="ckToggle(this,'vhr')"><div class="ck-box">✓</div><span class="ck-text">ASCVD + Current smoking</span></label>
-        <label class="ck" onclick="ckToggle(this,'vhr')"><div class="ck-box">✓</div><span class="ck-text">ASCVD + Heart failure</span></label>
-        <label class="ck" onclick="ckToggle(this,'vhr')"><div class="ck-box">✓</div><span class="ck-text">ASCVD + Familial hypercholesterolemia</span></label>
-        <label class="ck" onclick="ckToggle(this,'vhr')"><div class="ck-box">✓</div><span class="ck-text">Persistently elevated LDL despite maximally tolerated therapy</span></label>
+      <div class="checklist" id="major-list">
+        <label class="ck" onclick="ckToggle(this,'major')"><div class="ck-box">✓</div><span class="ck-text">ACS within the past <strong>12 months</strong></span></label>
+        <label class="ck" onclick="ckToggle(this,'major')"><div class="ck-box">✓</div><span class="ck-text">Prior MI <span style="font-weight:normal;color:var(--text-light)">(other than recent ACS above)</span></span></label>
+        <label class="ck" onclick="ckToggle(this,'major')"><div class="ck-box">✓</div><span class="ck-text">Prior ischemic stroke</span></label>
+        <label class="ck" onclick="ckToggle(this,'major')"><div class="ck-box">✓</div><span class="ck-text">Symptomatic PAD</span></label>
+      </div>
+      <div class="info" style="margin-top:10px" id="major-prompt">Check any major events above. If ≥2 are present, very high risk is confirmed. If exactly 1, additional high-risk features will be assessed below.</div>
+    </div>
+  </div>
+
+  <!-- Section B: High-risk features (auto-revealed when exactly 1 major event) -->
+  <div class="card hidden" id="s3-sec">
+    <div class="card-head">
+      <div class="snum">3</div>
+      <div>
+        <div class="card-title">High-risk features</div>
+        <div class="card-sub">1 major event present — check any additional high-risk features (≥2 required for very high risk)</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="checklist" id="hrf-list">
+        <label class="ck" onclick="ckToggle(this,'hrf')"><div class="ck-box">✓</div><span class="ck-text">Age ≥65</span></label>
+        <label class="ck" onclick="ckToggle(this,'hrf')"><div class="ck-box">✓</div><span class="ck-text">Prior CABG or PCI</span></label>
+        <label class="ck" onclick="ckToggle(this,'hrf')"><div class="ck-box">✓</div><span class="ck-text">Current smoker</span></label>
+        <label class="ck" onclick="ckToggle(this,'hrf')"><div class="ck-box">✓</div><span class="ck-text">Diabetes mellitus</span></label>
+        <label class="ck" onclick="ckToggle(this,'hrf')"><div class="ck-box">✓</div><span class="ck-text">History of heart failure</span></label>
+        <label class="ck" onclick="ckToggle(this,'hrf')"><div class="ck-box">✓</div><span class="ck-text">Hypertension</span></label>
+        <label class="ck" onclick="ckToggle(this,'hrf')"><div class="ck-box">✓</div><span class="ck-text">LDL-C ≥100 mg/dL despite maximally tolerated statin <strong>plus</strong> ezetimibe</span></label>
       </div>
       <div id="sec-result"></div>
       <button class="reset-btn" onclick="resetAll()">↺ Start over</button>
     </div>
   </div>
+
+  <!-- Result also shown here when ≥2 major events (no Section B needed) -->
+  <div id="sec-result-a"></div>
+  <div id="sec-reset-a" class="hidden"><button class="reset-btn" onclick="resetAll()">↺ Start over</button></div>
+
 </div>
 
 <!-- PRIMARY -->
@@ -383,7 +408,7 @@ function preventRisk(sx,age,tc,hdl,sbp,bmi,egfr,dm,smoke,bptx,statin){
 }
 
 // ── State ──
-var S={ascvd:null,vhr:0,tn:null,sex:null,risk:null,enh:0};
+var S={ascvd:null,major:0,hrf:0,tn:null,sex:null,risk:null,enh:0};
 
 // ── Scroll helper ──
 function scrollTo(id){
@@ -411,36 +436,91 @@ function setAscvd(v){
   }
 }
 
-// ── Checklist (VHR) ──
+// ── Checklist toggle ──
 function ckToggle(el,group){
   el.classList.toggle('on');
-  if(group==='vhr'){
-    S.vhr=document.querySelectorAll('#vhr-list .ck.on').length;
-    renderSecResult();
+  if(group==='major'){
+    S.major=document.querySelectorAll('#major-list .ck.on').length;
+    updateVHR();
+  } else if(group==='hrf'){
+    S.hrf=document.querySelectorAll('#hrf-list .ck.on').length;
+    updateVHR();
   }
 }
 
-function renderSecResult(){
-  var el=document.getElementById('sec-result');
-  if(S.vhr>0){
-    el.innerHTML='<div class="result r-vhigh">'+
-      '<div class="res-lbl">⚠ Very High Risk — Secondary Prevention</div>'+
-      '<div class="res-goal">LDL-C Goal: &lt;55 mg/dL</div>'+
-      '<div class="res-sub">Non-HDL-C goal: &lt;85 mg/dL</div>'+
-      '<div class="res-chips"><span class="res-chip">LDL-C &lt;55 mg/dL</span><span class="res-chip">Non-HDL-C &lt;85 mg/dL</span></div>'+
-      '<div class="res-rec"><strong>Initiate or intensify high-intensity statin.</strong> Add ezetimibe if goal not reached on maximally tolerated statin. Consider PCSK9 inhibitor if still above goal.</div>'+
-      '</div>';
-    scrollTo('sec-result');
-  } else {
-    el.innerHTML='<div class="result r-high">'+
-      '<div class="res-lbl">Secondary Prevention — Not Very High Risk</div>'+
-      '<div class="res-goal">LDL-C Goal: &lt;70 mg/dL</div>'+
-      '<div class="res-sub">Non-HDL-C goal: &lt;100 mg/dL</div>'+
-      '<div class="res-chips"><span class="res-chip">LDL-C &lt;70 mg/dL</span><span class="res-chip">Non-HDL-C &lt;100 mg/dL</span></div>'+
-      '<div class="res-rec"><strong>Initiate or intensify statin</strong> to achieve goal. Add ezetimibe if insufficient. Consider PCSK9 inhibitor if goal not reached on maximally tolerated statin ± ezetimibe.</div>'+
-      '</div>';
-    scrollTo('sec-result');
+function updateVHR(){
+  var secB=document.getElementById('s3-sec');
+  var resA=document.getElementById('sec-result-a');
+  var resetA=document.getElementById('sec-reset-a');
+
+  // Pathway A: ≥2 major events → VHR immediately, hide Section B
+  if(S.major>=2){
+    secB.classList.add('hidden');
+    // Clear Section B checkboxes
+    document.querySelectorAll('#hrf-list .ck.on').forEach(function(el){el.classList.remove('on')});
+    S.hrf=0;
+    document.getElementById('sec-result').innerHTML='';
+    resA.innerHTML=vhrResult();
+    resetA.classList.remove('hidden');
+    scrollTo('sec-result-a');
+    return;
   }
+
+  // No major events → hide everything
+  resA.innerHTML='';
+  resetA.classList.add('hidden');
+
+  if(S.major===0){
+    secB.classList.add('hidden');
+    document.querySelectorAll('#hrf-list .ck.on').forEach(function(el){el.classList.remove('on')});
+    S.hrf=0;
+    document.getElementById('sec-result').innerHTML='';
+    return;
+  }
+
+  // Pathway B: exactly 1 major event → reveal Section B
+  var wasHidden=secB.classList.contains('hidden');
+  secB.classList.remove('hidden');
+  if(wasHidden) scrollTo('s3-sec');
+
+  // Result fires once ≥2 HRF checked; shows "not VHR" if 0-1
+  var secRes=document.getElementById('sec-result');
+  if(S.hrf>=2){
+    secRes.innerHTML=vhrResult();
+    scrollTo('sec-result');
+  } else if(S.hrf===1){
+    secRes.innerHTML='<div class="info" style="margin-top:10px">1 of 2 required high-risk features — check one more to confirm very high risk, or if no further features apply, this patient is <strong>not very high risk</strong> (LDL-C goal &lt;70 mg/dL).</div>'+
+      '<button class="back-btn" style="margin-top:8px" onclick="confirmNotVHR()">No further features — show not very high risk result</button>';
+  } else {
+    secRes.innerHTML='<div class="info" style="margin-top:10px">Check any high-risk features above. If none apply, this patient is <strong>not very high risk</strong> (LDL-C goal &lt;70 mg/dL).</div>'+
+      '<button class="back-btn" style="margin-top:8px" onclick="confirmNotVHR()">No features apply — show not very high risk result</button>';
+  }
+}
+
+function vhrResult(){
+  return '<div class="result r-vhigh" style="margin-top:12px">'+
+    '<div class="res-lbl">&#9888; Very High Risk &mdash; Secondary Prevention</div>'+
+    '<div class="res-goal">LDL-C Goal: &lt;55 mg/dL</div>'+
+    '<div class="res-sub">Non-HDL-C goal: &lt;85 mg/dL</div>'+
+    '<div class="res-chips"><span class="res-chip">LDL-C &lt;55 mg/dL</span><span class="res-chip">Non-HDL-C &lt;85 mg/dL</span></div>'+
+    '<div class="res-rec"><strong>Initiate or intensify high-intensity statin.</strong> Add ezetimibe if goal not reached on maximally tolerated statin. Consider PCSK9 inhibitor if still above goal on maximally tolerated statin + ezetimibe.</div>'+
+    '</div>';
+}
+
+function notVhrResult(){
+  return '<div class="result r-high" style="margin-top:12px">'+
+    '<div class="res-lbl">Secondary Prevention &mdash; Not Very High Risk</div>'+
+    '<div class="res-goal">LDL-C Goal: &lt;70 mg/dL</div>'+
+    '<div class="res-sub">Non-HDL-C goal: &lt;100 mg/dL</div>'+
+    '<div class="res-chips"><span class="res-chip">LDL-C &lt;70 mg/dL</span><span class="res-chip">Non-HDL-C &lt;100 mg/dL</span></div>'+
+    '<div class="res-rec"><strong>Initiate or intensify statin</strong> to achieve goal. Add ezetimibe if insufficient. Consider PCSK9 inhibitor if goal not reached on maximally tolerated statin &plusmn; ezetimibe.</div>'+
+    '</div>';
+}
+
+function confirmNotVHR(){
+  var secRes=document.getElementById('sec-result');
+  secRes.innerHTML=notVhrResult();
+  scrollTo('sec-result');
 }
 
 // ── Treat-now ──
@@ -621,12 +701,15 @@ function renderPriResult(tier,r,enh){
 
 // ── Reset ──
 function resetAll(){
-  S={ascvd:null,vhr:0,tn:null,sex:null,risk:null,enh:0};
+  S={ascvd:null,major:0,hrf:0,tn:null,sex:null,risk:null,enh:0};
   ['btn-yes','btn-no'].forEach(function(id){document.getElementById(id).className='gate-btn'});
   document.getElementById('sec').classList.add('hidden');
   document.getElementById('pri').classList.add('hidden');
   document.querySelectorAll('.ck.on').forEach(function(el){el.classList.remove('on')});
   document.getElementById('sec-result').innerHTML='';
+  document.getElementById('sec-result-a').innerHTML='';
+  document.getElementById('sec-reset-a').classList.add('hidden');
+  document.getElementById('s3-sec').classList.add('hidden');
   ['tn-ldl','tn-dm','tn-hiv','tn-ckd'].forEach(function(id){document.getElementById(id).classList.remove('on')});
   document.getElementById('tn-result').innerHTML='';
   document.getElementById('prevent-card').classList.remove('hidden');
