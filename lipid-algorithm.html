@@ -478,10 +478,8 @@ function updateVHR(){
     return;
   }
 
-  // Pathway B: exactly 1 major event → reveal Section B
-  var wasHidden=secB.classList.contains('hidden');
+  // Pathway B: exactly 1 major event → reveal Section B in place, no scroll
   secB.classList.remove('hidden');
-  if(wasHidden) scrollTo('s3-sec');
 
   // Result fires once ≥2 HRF checked; shows "not VHR" if 0-1
   var secRes=document.getElementById('sec-result');
