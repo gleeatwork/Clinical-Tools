@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 Lipid Management Algorithm</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0f2340;--border:#d4dce8;--bg:#f4f7fb;--surface:#fff;
+  --text:#0f2340;--text-mid:#3a5070;--text-light:#6a82a0;--slate:#4a6080;
+  --red:#b83030;--red-bg:#fdf0ef;--red-bd:#e8b5b0;
+  --amber:#b06020;--amber-bg:#fdf5eb;--amber-bd:#e8d0a0;
+  --blue:#1a6fa8;--blue-bg:#edf4fb;--blue-bd:#a8c8e8;
+  --teal:#1a7a6a;--teal-bg:#edf6f4;--teal-bd:#a0d0c8;
+  --green:#2a7a40;--green-bg:#edf7f0;--green-bd:#a0d0b0;
+  --r:10px;--rs:6px
+}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.6}
+.header{background:var(--navy);color:#fff;padding:16px 20px}
+.header-inner{max-width:680px;margin:0 auto}
+.badge{display:inline-block;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:2px 10px;font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:rgba(255,255,255,.8);margin-bottom:7px}
+.header h1{font-size:18px;font-weight:600;color:#fff;margin-bottom:2px}
+.header p{font-size:11px;color:rgba(255,255,255,.5)}
+main{max-width:680px;margin:0 auto;padding:16px 14px 60px}
+
+/* Card */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-bottom:12px;overflow:hidden;box-shadow:0 1px 4px rgba(15,35,64,.08)}
+.card-head{display:flex;align-items:flex-start;gap:10px;padding:13px 15px;background:#fafbfd;border-bottom:1px solid var(--border)}
+.snum{width:21px;height:21px;border-radius:50%;background:var(--navy);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.card-title{font-size:13px;font-weight:600;color:var(--text);line-height:1.3}
+.card-sub{font-size:11px;color:var(--text-light);margin-top:2px;line-height:1.4}
+.card-body{padding:13px 15px}
+
+/* Gate buttons — big, obvious */
+.gate-wrap{display:flex;flex-direction:column;gap:8px}
+.gate-btn{width:100%;padding:14px 16px;border:1.5px solid var(--border);border-radius:var(--rs);background:var(--surface);cursor:pointer;font-family:inherit;font-size:13px;font-weight:500;color:var(--text-mid);text-align:left;transition:all .15s;display:flex;align-items:center;gap:10px}
+.gate-btn:hover{background:var(--bg);border-color:var(--slate)}
+.gate-btn.sel-yes{background:var(--red-bg);border-color:var(--red-bd);color:var(--red)}
+.gate-btn.sel-no{background:var(--green-bg);border-color:var(--green-bd);color:var(--green)}
+.gate-icon{font-size:18px;flex-shrink:0}
+.gate-text-main{font-weight:600;font-size:13px}
+.gate-text-sub{font-size:11px;opacity:.75;margin-top:1px}
+
+/* Checklist */
+.checklist{display:flex;flex-direction:column;gap:5px}
+.ck{display:flex;align-items:flex-start;gap:9px;padding:7px 9px;border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;transition:all .12s;user-select:none}
+.ck:hover{background:var(--bg)}
+.ck.on{background:var(--blue-bg);border-color:var(--blue-bd)}
+.ck-box{width:15px;height:15px;border:1.5px solid var(--border);border-radius:3px;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;background:#fff;font-size:9px;color:transparent;transition:all .12s}
+.ck.on .ck-box{background:var(--blue);border-color:var(--blue);color:#fff}
+.ck-text{font-size:12.5px;color:var(--text-mid);line-height:1.4}
+.ck.on .ck-text{color:var(--text)}
+
+/* Treat-now */
+.tn-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:440px){.tn-grid{grid-template-columns:1fr}}
+.tn{border:1px solid var(--border);border-radius:var(--rs);padding:9px 11px;cursor:pointer;transition:all .12s;user-select:none}
+.tn:hover{background:var(--bg)}
+.tn.on{background:var(--red-bg);border-color:var(--red-bd)}
+.tn-tag{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:1px 6px;border-radius:3px;background:var(--navy);color:#fff;margin-bottom:4px;display:inline-block}
+.tn.on .tn-tag{background:var(--red)}
+.tn-cond{font-size:12px;font-weight:600;color:var(--text)}
+.tn-rx{font-size:11px;color:var(--text-light);margin-top:2px}
+.tn.on .tn-rx{color:var(--red);font-weight:500}
+
+/* Inputs */
+.inp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+@media(max-width:440px){.inp-grid{grid-template-columns:1fr}}
+.inp-grp{display:flex;flex-direction:column;gap:2px}
+.inp-lbl{font-size:11.5px;font-weight:500;color:var(--text-mid)}
+.inp-hint{font-size:10px;color:var(--text-light)}
+input[type=number]{width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:13px;color:var(--text);background:#fff;-moz-appearance:textfield}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+input[type=number]:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,111,168,.12)}
+.sex-row{display:flex;gap:8px;margin-bottom:10px}
+.sex-btn{flex:1;padding:9px;border:1px solid var(--border);border-radius:var(--rs);background:#fff;cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:500;color:var(--text-mid);transition:all .12s}
+.sex-btn.on{background:var(--blue-bg);border-color:var(--blue-bd);color:var(--blue)}
+.tog-row{display:flex;align-items:center;justify-content:space-between;padding:9px 10px;border:1px solid var(--border);border-radius:var(--rs);background:#fff;cursor:pointer;user-select:none;margin-bottom:5px;transition:all .12s}
+.tog-row:last-child{margin-bottom:0}
+.tog-row.on{background:var(--blue-bg);border-color:var(--blue-bd)}
+.tog-lbl{font-size:12.5px;color:var(--text-mid)}
+.tog-row.on .tog-lbl{color:var(--text);font-weight:500}
+.tog{width:34px;height:19px;border-radius:10px;background:var(--border);position:relative;transition:background .15s;flex-shrink:0}
+.tog::after{content:'';position:absolute;width:14px;height:14px;border-radius:50%;background:#fff;top:2.5px;left:2.5px;transition:transform .15s}
+.tog-row.on .tog{background:var(--blue)}
+.tog-row.on .tog::after{transform:translateX(15px)}
+
+/* Risk display */
+.risk-box{padding:11px 13px;border-radius:var(--rs);border:1.5px solid;margin-top:10px}
+.rlow{background:var(--green-bg);border-color:var(--green-bd)}
+.rbord{background:var(--teal-bg);border-color:var(--teal-bd)}
+.rint{background:var(--amber-bg);border-color:var(--amber-bd)}
+.rhigh{background:var(--red-bg);border-color:var(--red-bd)}
+.risk-label{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase}
+.rlow .risk-label{color:var(--green)}
+.rbord .risk-label{color:var(--teal)}
+.rint .risk-label{color:var(--amber)}
+.rhigh .risk-label{color:var(--red)}
+.risk-pct{font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1}
+.rlow .risk-pct{color:var(--green)}
+.rbord .risk-pct{color:var(--teal)}
+.rint .risk-pct{color:var(--amber)}
+.rhigh .risk-pct{color:var(--red)}
+.risk-tier-lbl{font-size:11.5px;color:var(--text-mid);margin-top:2px}
+
+/* Enhancers */
+.enh-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+@media(max-width:440px){.enh-grid{grid-template-columns:1fr}}
+.enh{display:flex;align-items:flex-start;gap:7px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;user-select:none;transition:all .12s;font-size:12px;color:var(--text-mid)}
+.enh:hover{background:var(--bg)}
+.enh.on{background:var(--amber-bg);border-color:var(--amber-bd);color:var(--text)}
+.enh-box{width:13px;height:13px;border:1.5px solid var(--border);border-radius:3px;flex-shrink:0;margin-top:2px;transition:all .12s}
+.enh.on .enh-box{background:var(--amber);border-color:var(--amber)}
+
+/* Result */
+.result{border-radius:var(--r);padding:16px;margin-top:12px;border:1.5px solid;animation:fadeUp .22s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.r-vhigh{background:#fff5f4;border-color:var(--red-bd)}
+.r-high{background:var(--amber-bg);border-color:var(--amber-bd)}
+.r-int{background:var(--blue-bg);border-color:var(--blue-bd)}
+.r-bord{background:var(--teal-bg);border-color:var(--teal-bd)}
+.r-low{background:var(--green-bg);border-color:var(--green-bd)}
+.r-tn{background:#fff5f4;border-color:var(--red-bd)}
+.res-lbl{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px}
+.r-vhigh .res-lbl,.r-tn .res-lbl{color:var(--red)}
+.r-high .res-lbl{color:var(--amber)}
+.r-int .res-lbl{color:var(--blue)}
+.r-bord .res-lbl{color:var(--teal)}
+.r-low .res-lbl{color:var(--green)}
+.res-goal{font-size:20px;font-weight:700;letter-spacing:-.01em;line-height:1.2;margin-bottom:3px}
+.r-vhigh .res-goal,.r-tn .res-goal{color:var(--red)}
+.r-high .res-goal{color:#8a4010}
+.r-int .res-goal{color:var(--blue)}
+.r-bord .res-goal{color:var(--teal)}
+.r-low .res-goal{color:var(--green)}
+.res-sub{font-size:12px;color:var(--text-mid);margin-bottom:8px}
+.res-chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:9px}
+.res-chip{padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;background:#fff;border:1.5px solid}
+.r-vhigh .res-chip,.r-tn .res-chip{border-color:var(--red);color:var(--red)}
+.r-high .res-chip{border-color:var(--amber);color:var(--amber)}
+.r-int .res-chip{border-color:var(--blue);color:var(--blue)}
+.r-bord .res-chip{border-color:var(--teal);color:var(--teal)}
+.res-rec{font-size:12px;color:var(--text-mid);background:rgba(255,255,255,.6);border-radius:var(--rs);padding:8px 10px;line-height:1.55}
+.res-divider{height:1px;background:rgba(15,35,64,.08);margin:8px 0}
+
+.info{font-size:11px;color:var(--text-light);padding:7px 9px;background:#f0f4f8;border-radius:var(--rs);margin-top:8px;line-height:1.5;border-left:3px solid var(--slate)}
+.info a{color:var(--blue);text-decoration:none}
+.reset-btn{background:none;border:1px solid var(--border);border-radius:var(--rs);padding:5px 13px;font-family:inherit;font-size:12px;color:var(--text-light);cursor:pointer;margin-top:10px;transition:all .12s}
+.reset-btn:hover{background:var(--bg);color:var(--text-mid)}
+.footer{max-width:680px;margin:0 auto;padding:0 14px 24px;font-size:11px;color:var(--text-light);line-height:1.5;border-top:1px solid var(--border);padding-top:14px}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="badge">2026 ACC/AHA Dyslipidemia Guidelines</div>
+    <h1>Lipid Management Algorithm</h1>
+    <p>Clinical decision support &mdash; not a substitute for clinical judgment</p>
+  </div>
+</div>
+
+<main>
+
+<!-- S1: Gate -->
+<div class="card" id="s1">
+  <div class="card-head">
+    <div class="snum">1</div>
+    <div>
+      <div class="card-title">Does this patient have established clinical ASCVD?</div>
+      <div class="card-sub">Prior ACS/MI &middot; Chronic coronary disease &middot; Arterial revascularization &middot; Ischemic stroke/TIA &middot; Symptomatic PAD</div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="gate-wrap">
+      <button class="gate-btn" id="btn-yes" onclick="setAscvd('yes')">
+        <span class="gate-icon">🫀</span>
+        <div><div class="gate-text-main">Yes — known ASCVD</div><div class="gate-text-sub">Secondary prevention pathway</div></div>
+      </button>
+      <button class="gate-btn" id="btn-no" onclick="setAscvd('no')">
+        <span class="gate-icon">🛡️</span>
+        <div><div class="gate-text-main">No — primary prevention</div><div class="gate-text-sub">No prior cardiovascular events</div></div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- SECONDARY -->
+<div id="sec" class="hidden">
+  <div class="card" id="s2-sec">
+    <div class="card-head">
+      <div class="snum">2</div>
+      <div>
+        <div class="card-title">Very high risk screen</div>
+        <div class="card-sub">Check all that apply — any one criterion qualifies</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="checklist" id="vhr-list">
+        <label class="ck" onclick="ckToggle(this,'vhr')"><div class="ck-box">✓</div><span class="ck-text">Recent ACS or recent MI</span></label>
+        <label class="ck" onclick="ckToggle(this,'vhr')"><div class="ck-box">✓</div><span class="ck-text">Recurrent ASCVD events</span></label>
+        <label class="ck" onclick="ckToggle(this,'vhr')"><div class="ck-box">✓</div><span class="ck-text">Polyvascular disease — ASCVD in ≥2 vascular territories</span></label>
+        <label class="ck" onclick="ckToggle(this,'vhr')"><div class="ck-box">✓</div><span class="ck-text">ASCVD + Diabetes mellitus</span></label>
+        <label class="ck" onclick="ckToggle(this,'vhr')"><div class="ck-box">✓</div><span class="ck-text">ASCVD + CKD</span></label>
+        <label class="ck" onclick="ckToggle(this,'vhr')"><div class="ck-box">✓</div><span class="ck-text">ASCVD + Current smoking</span></label>
+        <label class="ck" onclick="ckToggle(this,'vhr')"><div class="ck-box">✓</div><span class="ck-text">ASCVD + Heart failure</span></label>
+        <label class="ck" onclick="ckToggle(this,'vhr')"><div class="ck-box">✓</div><span class="ck-text">ASCVD + Familial hypercholesterolemia</span></label>
+        <label class="ck" onclick="ckToggle(this,'vhr')"><div class="ck-box">✓</div><span class="ck-text">Persistently elevated LDL despite maximally tolerated therapy</span></label>
+      </div>
+      <div id="sec-result"></div>
+      <button class="reset-btn" onclick="resetAll()">↺ Start over</button>
+    </div>
+  </div>
+</div>
+
+<!-- PRIMARY -->
+<div id="pri" class="hidden">
+
+  <!-- Treat-now -->
+  <div class="card" id="s2-pri">
+    <div class="card-head">
+      <div class="snum">2</div>
+      <div>
+        <div class="card-title">Treat-now groups</div>
+        <div class="card-sub">If patient matches any group below — start therapy, no calculator needed</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="tn-grid">
+        <div class="tn" id="tn-ldl" onclick="tnToggle('tn-ldl')">
+          <div class="tn-tag">LDL</div>
+          <div class="tn-cond">LDL-C ≥190 mg/dL</div>
+          <div class="tn-rx">High-intensity statin</div>
+        </div>
+        <div class="tn" id="tn-dm" onclick="tnToggle('tn-dm')">
+          <div class="tn-tag">DM</div>
+          <div class="tn-cond">Age 40–75 with Diabetes</div>
+          <div class="tn-rx">At minimum moderate-intensity statin</div>
+        </div>
+        <div class="tn" id="tn-hiv" onclick="tnToggle('tn-hiv')">
+          <div class="tn-tag">HIV</div>
+          <div class="tn-cond">Age ≥40 with HIV</div>
+          <div class="tn-rx">Start lipid-lowering therapy</div>
+        </div>
+        <div class="tn" id="tn-ckd" onclick="tnToggle('tn-ckd')">
+          <div class="tn-tag">CKD</div>
+          <div class="tn-cond">Age ≥40, CKD eGFR &lt;60</div>
+          <div class="tn-rx">Start lipid-lowering therapy</div>
+        </div>
+      </div>
+      <div id="tn-result"></div>
+    </div>
+  </div>
+
+  <!-- PREVENT calc -->
+  <div class="card" id="prevent-card">
+    <div class="card-head">
+      <div class="snum">3</div>
+      <div>
+        <div class="card-title">PREVENT Calculator — 10-year ASCVD risk</div>
+        <div class="card-sub">2023 AHA PREVENT equations · Validated ages 30–79 · No prior CVD</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="sex-row">
+        <button class="sex-btn" id="sx-f" onclick="setSex('f')">Female</button>
+        <button class="sex-btn" id="sx-m" onclick="setSex('m')">Male</button>
+      </div>
+      <div class="inp-grid">
+        <div class="inp-grp">
+          <div class="inp-lbl">Age (years)</div>
+          <div class="inp-hint">30 – 79</div>
+          <input type="number" id="p-age" min="30" max="79" placeholder="e.g. 55" oninput="calc()">
+        </div>
+        <div class="inp-grp">
+          <div class="inp-lbl">Total Cholesterol (mg/dL)</div>
+          <div class="inp-hint">130 – 320</div>
+          <input type="number" id="p-tc" min="130" max="320" placeholder="e.g. 200" oninput="calc()">
+        </div>
+        <div class="inp-grp">
+          <div class="inp-lbl">HDL-C (mg/dL)</div>
+          <div class="inp-hint">20 – 100</div>
+          <input type="number" id="p-hdl" min="20" max="100" placeholder="e.g. 50" oninput="calc()">
+        </div>
+        <div class="inp-grp">
+          <div class="inp-lbl">Systolic BP (mmHg)</div>
+          <div class="inp-hint">90 – 200</div>
+          <input type="number" id="p-sbp" min="90" max="200" placeholder="e.g. 130" oninput="calc()">
+        </div>
+        <div class="inp-grp">
+          <div class="inp-lbl">BMI (kg/m²)</div>
+          <div class="inp-hint">18.5 – 39.9</div>
+          <input type="number" id="p-bmi" min="18.5" max="39.9" step="0.1" placeholder="e.g. 28" oninput="calc()">
+        </div>
+        <div class="inp-grp">
+          <div class="inp-lbl">eGFR (mL/min/1.73m²)</div>
+          <div class="inp-hint">15 – 140</div>
+          <input type="number" id="p-egfr" min="15" max="140" placeholder="e.g. 80" oninput="calc()">
+        </div>
+      </div>
+      <div class="tog-row" id="tog-dm" onclick="togBin('tog-dm')">
+        <span class="tog-lbl">Diabetes mellitus</span><div class="tog"></div>
+      </div>
+      <div class="tog-row" id="tog-smoke" onclick="togBin('tog-smoke')">
+        <span class="tog-lbl">Current smoker</span><div class="tog"></div>
+      </div>
+      <div class="tog-row" id="tog-bptx" onclick="togBin('tog-bptx')">
+        <span class="tog-lbl">On antihypertensive medication</span><div class="tog"></div>
+      </div>
+      <div class="tog-row" id="tog-statin" onclick="togBin('tog-statin')">
+        <span class="tog-lbl">Currently on a statin</span><div class="tog"></div>
+      </div>
+      <div id="prevent-result"></div>
+      <div class="info">Powered by AHA PREVENT 2023 equations (Khan et al., <em>Circulation</em> 2024). Verify at <a href="https://professional.heart.org/prevent" target="_blank">professional.heart.org/prevent</a>.</div>
+    </div>
+  </div>
+
+  <!-- Risk enhancers -->
+  <div class="card hidden" id="enh-card">
+    <div class="card-head">
+      <div class="snum">4</div>
+      <div>
+        <div class="card-title">Risk enhancers</div>
+        <div class="card-sub">Check any present — favors initiating therapy at borderline or intermediate risk</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="enh-grid">
+        <label class="enh" onclick="enhToggle(this)"><div class="enh-box"></div>Family h/o premature ASCVD (M&lt;55, F&lt;65)</label>
+        <label class="enh" onclick="enhToggle(this)"><div class="enh-box"></div>LDL-C 160–189 mg/dL</label>
+        <label class="enh" onclick="enhToggle(this)"><div class="enh-box"></div>CKD (not in treat-now group)</label>
+        <label class="enh" onclick="enhToggle(this)"><div class="enh-box"></div>Elevated Lp(a), apoB, or hs-CRP</label>
+        <label class="enh" onclick="enhToggle(this)"><div class="enh-box"></div>Preeclampsia, gestational DM, or early menopause</label>
+        <label class="enh" onclick="enhToggle(this)"><div class="enh-box"></div>Chronic inflammatory disease (RA, lupus, psoriasis, IBD)</label>
+        <label class="enh" onclick="enhToggle(this)"><div class="enh-box"></div>South Asian, Filipino, or other high-risk ancestry</label>
+        <label class="enh" onclick="enhToggle(this)"><div class="enh-box"></div>Elevated triglycerides</label>
+        <label class="enh" onclick="enhToggle(this)"><div class="enh-box"></div>Overweight/obesity or cardiometabolic disease</label>
+      </div>
+      <div id="pri-result"></div>
+      <button class="reset-btn" onclick="resetAll()">↺ Start over</button>
+    </div>
+  </div>
+
+</div><!-- /primary -->
+</main>
+
+<div class="footer">
+  <strong>Source:</strong> 2026 ACC/AHA/AACVPR/ABC/ACPM/ADA/AGS/APhA/ASPC/NLA/PCNA Guideline on the Management of Dyslipidemia.
+  PREVENT risk estimated using neural network approximation of 2023 AHA PREVENT equations (R²&gt;0.98, MAE&lt;0.5%).
+  For clinical use by trained providers only.
+</div>
+
+<script>
+// ── Neural network weights (PREVENT ASCVD base model) ──
+const NN = {"female":{"W1":[[-0.21315512,-0.07156473,-0.09227421,0.13303686,-0.21336411,0.06293842,0.16193616,-0.06969031,0.36800853,-0.38332973,-0.10374449,-0.23824846,0.21360597,-0.06692837,0.00839117,-0.0192558,0.16954987,-0.07805232,-0.00582308,-0.15445353,-0.06730705,-0.09839117,-0.11371533],[0.56809896,0.18744342,0.04458662,-0.12706748,0.00810515,0.15136317,-0.00269891,-0.10998293,0.04388965,0.10782121,0.11458919,-0.04553119,0.23158908,-0.07308648,-0.02492713,0.00968461,0.06620958,-0.19273621,0.0220992,0.09753144,-0.06782432,0.02021889,0.20081079],[0.14396524,0.37087646,-0.1263217,-0.35048771,0.06079121,0.07671658,-0.04213952,0.34723613,0.12995947,-0.2267662,0.18917523,-0.09529493,-0.12396882,0.12936123,0.16857636,-0.07784155,-0.2805297,-0.18945181,0.01111068,-0.29842724,-0.22238789,-0.02458041,-0.09018241],[-0.07484072,0.18392741,0.09891353,-0.14715575,-0.21548663,0.08093137,-0.07435343,-0.06605012,-0.3088384,-0.37273205,-0.20810144,-0.07138672,-0.27062915,0.10924656,0.00477961,0.04451286,-0.29555399,0.10750662,-0.11069622,0.14987214,-0.13381816,0.21973526,0.19973751],[0.10417651,-0.15222016,-0.13195322,-0.30907953,-0.16369024,-0.27347975,0.01594782,0.03410562,0.06052842,0.25326798,0.2449563,-0.06346281,0.30233762,-0.03137517,-0.03541176,0.08810637,-0.10089325,0.05225253,0.05666551,0.13345858,-0.22008888,-0.07703015,-0.01349974],[-0.08588352,-0.21826516,0.34839031,0.05096667,0.09277186,0.21499993,0.15931935,0.18089195,0.4735671,0.05631843,0.39182254,0.23226935,0.17786634,0.32396351,0.20987811,0.29537926,0.02180182,0.01742382,0.03289961,-0.15548544,0.13401253,-0.09731876,0.18736433],[-0.3621837,0.06080845,0.07745798,-0.02256372,0.25065476,-0.12041496,0.22448743,0.16449467,-0.25063832,-0.28929348,-0.07918412,0.0121673,0.12526123,-0.45705305,-0.14156749,-0.33804048,0.35721059,0.09929989,0.20224836,0.2985618,0.20311423,0.32645483,0.06181984],[0.196286,-0.11693006,-0.18346151,0.05850123,-0.15892613,-0.13089984,0.07502931,-0.02390041,-0.03099711,-0.06288183,-0.01001772,-0.08317501,-0.07840087,0.06099103,-0.04886063,-0.18485515,-0.18155125,0.13653022,-0.09372655,0.15239889,0.06593153,0.18048267,0.06502473],[-0.03348418,-0.19680416,-0.2398542,0.29338688,0.00843838,-0.2634346,0.01412571,0.05408998,0.2059992,-0.02922324,-0.05342283,-0.19433115,-0.0304016,-0.23817517,-0.29000049,0.04065557,0.01261948,-0.03107113,-0.00150543,-0.25636115,0.21068197,0.13515917,0.03054305],[0.26871508,0.01226235,0.09188612,-0.23489467,0.17814804,0.14037589,-0.11851001,0.01994777,0.18122868,-0.13537079,-0.0494194,0.1991702,0.15997915,-0.14665684,0.01897775,0.19669403,-0.01478584,0.01832728,-0.06616066,-0.03918401,0.03599665,-0.07578278,-0.06802938],[-0.42364036,-0.15548657,0.08805444,0.05555291,-0.07932346,-0.01992948,-0.02619639,-0.09528288,-0.02280571,-0.11718937,-0.17310692,0.07184207,-0.13602323,0.09246734,-0.04616711,-0.26747429,0.26292392,0.47509817,-0.12204962,0.05321917,-0.21382019,-0.15248442,-0.01354386],[0.32706475,0.20934822,0.0198854,0.09886438,0.33322853,-0.35111466,0.04828621,0.21327196,0.27278307,-0.22946163,0.19907423,0.05652504,0.47563092,0.13278342,-0.16117785,0.09104568,0.11713113,-0.17179093,-0.27562178,0.0822151,0.27713062,0.05166542,0.12945478],[0.35699799,-0.03933872,0.28112159,-0.33483155,0.25203013,-0.11891567,-0.00958608,-0.09670673,-0.01837273,-0.1486198,-0.23476182,0.35633564,0.36184365,-0.12044894,-0.25017064,-0.0656735,0.17354445,-0.21772253,-0.21865062,-0.13987734,-0.12795772,0.23195802,0.15797556],[-0.11454347,0.14657603,-0.24011548,-0.3857207,-0.13685778,-0.26053078,-0.19664631,-0.23081775,-0.09283084,0.11477329,-0.18440035,0.071503,0.01383311,-0.23547922,0.0835476,-0.13152826,-0.07223766,-0.29933346,-0.33711779,-0.16674773,0.11936856,0.02983902,0.3281483],[-0.30259924,-0.0923211,-0.1119685,0.06213282,-0.03955182,0.10441299,-0.17715417,0.09267029,0.13212142,-0.10904389,-0.38021894,0.06268414,0.12362801,-0.15256208,0.04984558,-0.04128274,0.00704449,0.1077338,0.02761709,-0.08355709,0.0255141,0.03076978,-0.12926662],[-0.29234176,0.03730872,-0.26251275,-0.10387183,-0.10461736,-0.13401094,0.07200001,-0.20898911,0.14702421,-0.08108056,-0.35471624,0.003484,0.04495324,0.10594235,0.04259674,0.00031126,-0.07125978,-0.10938952,0.05106014,-0.01913942,0.11088607,-0.17502816,0.07178666],[0.1139663,-0.00528635,0.10445039,0.25121465,-0.10239752,0.0600563,-0.15469022,0.26058793,0.36138536,0.32996301,0.26395577,-0.05838379,-0.12786118,0.00924511,0.08846676,0.13862279,-0.13178163,-0.01509149,-0.20818105,0.06942937,-0.08822836,0.18533264,0.08675746],[-0.07158099,-0.18299364,0.05229188,0.25464955,-0.36480829,-0.07384715,-0.20499361,0.29255255,0.22235462,0.21242678,0.06124648,-0.38104931,0.2362818,-0.24555821,-0.01077056,-0.26546461,0.20996791,-0.19987751,-0.0488963,-0.10136522,-0.02956384,-0.24074155,-0.18706562],[-0.08126156,0.23010859,-0.07972793,0.18641159,0.05704312,0.26930452,0.00908106,0.21456968,0.00475226,-0.13930532,-0.08945065,-0.43800326,-0.01074971,-0.30169578,-0.06445963,0.21872292,0.22923623,-0.18886492,0.16865461,-0.12457533,0.07108504,-0.01392111,-0.15465095],[-0.07655583,0.25951147,-0.23485136,0.13648783,0.03469936,-0.30109647,0.04978637,-0.04288541,0.0857214,0.02217715,-0.21174801,-0.089353,0.30880776,0.23997502,0.2343374,0.26785212,0.21203441,-0.26028152,0.0137395,0.0827997,-0.01740356,-0.05986728,0.20403217],[0.19424849,0.18898195,0.01342678,0.04920901,-0.21161427,-0.12751481,0.23999496,-0.23392445,0.26172642,0.34945727,0.09973711,-0.04971736,-0.06168014,-0.17904731,-0.15229619,0.20686114,0.20867014,-0.05113996,0.10088869,-0.17790977,-0.06428529,0.04474938,0.03982322],[-0.30166391,0.20970924,-0.12957055,-0.10832135,-0.13840954,-0.15161216,-0.17138773,0.20826809,0.11493387,-0.19592949,-0.06950904,-0.05259628,0.13769058,0.12563644,0.29034891,0.03766456,0.07088972,0.0300913,-0.09095222,-0.04993286,0.28750678,-0.11741414,0.15327688],[-0.18820856,0.007553,0.06102944,0.29632551,0.19150886,0.3564397,0.06760443,-0.06225246,0.08448292,-0.1386734,-0.34717659,-0.33282883,-0.05189552,0.14903161,-0.22493425,-0.21598587,0.09491855,-0.22759139,-0.20015182,0.14975145,0.03782908,-0.30371269,-0.1926985],[-0.17782868,0.24606884,0.11190258,0.06484504,0.0211305,0.33967396,-0.07929445,0.18597968,0.10863948,-0.30709223,0.01228,-0.20770914,-0.39737995,-0.0264635,0.10863257,0.14453807,0.19726796,0.13499823,-0.09055024,0.15251564,-0.01175047,0.19194891,0.24241743],[0.01691562,-0.24497445,0.12449627,0.28235989,-0.21382397,0.03361745,-0.10668861,0.19168739,0.33156243,-0.45584247,-0.32480656,0.01106911,0.19594318,-0.23003461,-0.13814606,0.0357282,0.10660785,0.11115982,-0.10158571,0.07416196,0.02209975,0.03635654,-0.02346384],[0.13859134,-0.0663818,0.0547821,0.1471715,0.03922778,0.1249229,0.00843399,0.17887609,-0.14375104,0.34315386,0.16998582,-0.03957512,-0.29334825,0.33792557,0.22794955,-0.12405088,-0.14454808,0.01742496,0.02480961,-0.1404908,-0.18688885,-0.04726048,-0.16171343],[-0.02056835,-0.28788947,-0.20209691,-0.01509179,0.13026834,-0.07940966,-0.04118745,0.0322145,-0.28453507,0.21208636,-0.03338069,0.2084635,0.02436007,-0.36547456,-0.09575488,0.14349968,-0.05575297,-0.08304509,-0.12427579,-0.31836483,-0.03519996,-0.2042445,-0.16012345],[-0.11811919,-0.08443277,0.01209894,0.04157457,-0.15247737,0.03842287,0.07662837,-0.04681952,-0.19945254,-0.00153401,-0.33421857,-0.26980833,0.18374124,-0.16829927,0.11336088,0.00513886,-0.03912028,0.16690337,-0.02356365,-0.15341891,-0.24394832,0.03263113,0.16449156],[0.01876298,-0.1109584,0.12635188,-0.06291679,0.06740856,0.06586852,0.04431897,0.17250231,-0.0077279,-0.15218727,-0.14621578,-0.31343565,0.22168708,0.17904856,-0.1481618,0.20009484,0.32717208,-0.03978787,-0.12943505,-0.01281636,-0.07815099,0.03008369,0.07823566],[-0.44331836,-0.0451615,0.11395747,-0.12924205,0.13482643,-0.19971649,-0.08813965,-0.14429641,-0.27585176,0.09081809,0.13042244,0.09899182,0.04837697,0.290107,-0.04779151,0.07466099,0.09268403,0.06205374,-0.06107216,-0.32951203,-0.2744986,-0.42493378,0.01536661],[-0.18456872,-0.00124184,-0.01633196,0.26280944,-0.13326313,-0.03523189,-0.05298528,-0.09092574,0.10727658,-0.3386206,-0.22590961,-0.23903058,-0.06172366,0.13752333,0.03336452,-0.00285723,0.01362768,0.12105077,-0.027383,-0.07240399,-0.03617087,-0.01055105,0.03561607],[-0.17341864,0.02097194,-0.05598278,0.11930415,0.1273242,0.03360466,-0.07828679,0.00232559,0.08245356,-0.04114874,0.24923942,0.25449238,0.06931113,0.12588534,0.02088815,-0.0984284,0.08976844,0.30372039,-0.06473768,0.10658278,0.09462083,-0.17907533,0.06883518]],"b1":[0.17663737,0.08254391,0.04267991,-0.1158939,-0.05578828,-0.03048423,0.16060423,-0.02771555,-0.13391383,0.2706371,-0.14432231,0.21401346,0.27156102,0.10195586,-0.28379753,0.28313271,0.15042109,-0.12919646,-0.16533092,0.24296863,0.10799219,0.06163127,0.23180316,0.08895519,-0.04632929,-0.1926113,-0.39187504,0.31726364,-0.34889563,-0.02092,0.38595231,0.26612295],"W2":[[-0.03434796,-0.26244197,0.13671995,0.03204678,-0.21099066,0.03877736,-0.02457165,-0.12440897,0.01072327,0.0275625,0.05640454,-0.23887651,-0.23754427,0.11301782,-0.11784298,-0.11671778,0.30894727,-0.05375686,-0.04919446,-0.24371208,0.313708,0.20889875,0.2165139,0.27355431,0.19396195,-0.33897991,-0.34523061,0.22723578,-0.32917802,-0.20197505,0.30220476,-0.33556003],[0.23671673,0.23204114,-0.28333642,0.01292897,-0.22709006,0.04504508,0.04801835,0.20263075,0.21919382,-0.15863398,-0.13776135,-0.40524781,0.05204986,-0.2516475,0.11540022,-0.02169549,-0.06148073,0.20502752,-0.19061644,-0.33762019,-0.26000747,-0.18614085,0.22857457,-0.0144761,0.14770737,-0.0860606,0.29198768,-0.24588189,0.08330289,-0.29926935,0.19728958,-0.35579174],[-0.31238009,0.10769148,0.06147315,-0.3167828,-0.00545831,-0.26516476,-0.24445238,-0.14267526,-0.16352827,0.14092826,-0.27926283,-0.20820733,-0.16886489,-0.07784227,-0.13342055,-0.23893396,0.30056713,-0.13313943,-0.07882484,0.34484272,0.33958814,-0.0722821,0.23319691,-0.03836512,0.12517645,0.03093446,0.16393171,-0.36683223,0.13893771,0.03001036,0.14055227,-0.10575293],[0.20218181,-0.02529801,0.1003465,-0.11603276,-0.08241161,0.18976122,-0.18152449,-0.19089591,-0.24822954,0.02982636,0.18059043,0.33562614,-0.05307326,0.00587596,-0.34768785,0.28888942,0.28584464,0.02334559,0.10793166,-0.02138535,0.15988482,0.15903849,0.26004611,0.0868746,0.10925145,0.30712105,-0.31599397,-0.19004101,-0.16859428,-0.13396156,-0.07952917,0.0108482],[-0.23128974,-0.09549343,-0.11057829,0.29023416,0.26840758,-0.26664029,0.28503578,0.26776423,-0.15622785,-0.27740587,0.3637808,0.18432531,-0.16869641,-0.05589142,0.39959236,0.27590672,-0.20592187,0.24585104,0.24757451,-0.13286519,0.00376517,0.05133151,0.03892665,0.28355443,-0.22327481,0.12583356,-0.18250905,0.09055415,0.2498573,0.2972122,-0.17489734,-0.01401858],[-0.13455644,0.33184809,0.16581338,-0.28609941,-0.11100334,0.26417798,0.29729919,-0.1093019,-0.25579332,0.37923149,-0.01716479,0.09755047,-0.08626691,0.14100401,-0.27328595,-0.37568435,0.28305821,0.09238764,0.1888144,0.07951801,-0.04196652,-0.20370325,0.01291237,-0.120613,0.30037323,-0.12766457,0.17302553,0.20698122,-0.1861557,-0.09224806,-0.28463807,-0.17894034],[0.31286021,-0.27170741,0.26760721,-0.20220085,0.08326011,-0.14806657,-0.09982213,-0.01611907,-0.14108726,0.1372315,-0.22179521,0.04288748,0.21099679,-0.21029713,0.37279416,0.18294024,-0.33552668,-0.17401717,0.14944405,-0.09905508,-0.05858723,0.14106923,-0.2890392,0.19531634,0.29732688,0.0618847,-0.39665463,0.11425785,-0.14986447,0.36304265,0.18200677,0.15368524],[-0.27153615,0.15927828,0.28028784,-0.12940951,0.12109612,-0.15630321,-0.17742375,0.02839235,0.17696136,-0.13818117,-0.07338568,0.18344435,-0.16873336,-0.40101195,-0.12957125,0.23476518,0.11448555,-0.13778905,-0.04378282,0.26837382,-0.15433825,-0.12923378,-0.05248758,-0.0259937,-0.20879685,-0.01638811,0.15232205,-0.13305059,0.44161077,-0.30052953,-0.23674998,0.1937515],[-0.27110595,0.05762679,-0.09282405,0.07015099,-0.29746528,-0.33041841,0.08745966,-0.19038486,-0.06933173,0.3246276,-0.34425717,-0.20252096,0.02618993,0.1050466,-0.28573466,-0.31785337,-0.14197173,0.28743412,-0.15042307,0.13162068,-0.16334957,-0.20224598,-0.10471898,-0.25578775,0.10446383,0.23575723,0.0086877,-0.22066049,-0.01889965,0.23152553,-0.40394236,0.1748232],[0.09900427,0.14122769,-0.27946406,0.26486265,0.11287619,0.02927279,-0.03616471,-0.16853097,0.28947749,0.0798228,0.25194611,0.34733885,0.02820355,-0.08341389,-0.04306997,-0.08071464,-0.20441646,-0.36934372,0.14688458,-0.28547411,-0.1595136,0.00383678,-0.13891394,0.23630501,-0.33616244,-0.29101189,0.10070697,0.28130813,0.15873966,0.16638678,-0.15004868,-0.27931733],[0.0983523,-0.29381434,0.32920586,-0.13633155,-0.22717011,0.06781141,-0.32963718,0.1400221,0.22285966,0.36573749,-0.29177635,-0.00913917,0.12776291,0.07506053,0.19023794,0.24048062,-0.25364241,0.23410583,-0.21041937,-0.0766203,0.2155365,0.02703526,0.23458824,0.16067865,-0.21663675,0.1879976,-0.2564376,-0.12909786,-0.02639447,0.18454425,-0.42739225,0.03648842],[0.00556,0.32787257,0.21764682,-0.08855323,0.29622342,-0.30193515,-0.20735917,0.23395811,-0.1616574,0.30456218,0.05612643,-0.03017277,0.3042137,-0.11738147,0.05800785,-0.39674652,0.16733752,0.03912473,-0.20605053,0.15267425,-0.06599796,0.05532138,0.04868464,0.05602695,0.11310417,-0.03756858,0.35894474,-0.13008823,-0.04461383,0.24041819,-0.12498689,-0.24274588],[0.22927796,0.23392178,-0.24635055,0.17699402,-0.22073162,0.15163238,0.10674325,0.28740401,-0.11537943,-0.16846139,-0.11782584,-0.0533924,0.12260417,-0.09019835,0.32040012,0.29583963,-0.176318,0.34040053,-0.05025886,0.34512926,-0.35010321,-0.24463369,-0.33348449,0.24113621,-0.18126105,0.34136189,0.32496642,-0.13867596,0.28480662,0.22260138,-0.01976086,-0.21817411],[-0.04673072,0.09275286,0.31346293,-0.0726662,-0.02038654,0.00730421,0.06815072,-0.11264585,-0.17868801,-0.2560773,0.01757916,-0.27170698,-0.22232088,0.15173665,0.04522758,-0.09829339,0.21546294,0.25644092,-0.28242325,-0.1120995,0.31417161,0.2945356,-0.1383085,0.18200851,0.14319054,-0.03527452,0.40823319,0.12898271,-0.04162094,0.10588538,0.02301398,0.39101426],[-0.16996269,0.10386783,0.2525382,-0.13825,-0.34751806,0.02313938,-0.26943511,0.0329124,-0.04495679,-0.23513489,0.05443525,-0.27368575,-0.29167333,0.24402394,0.1711323,0.1947756,-0.32777261,0.1249127,-0.17232169,0.15392511,0.24368303,-0.10886425,0.04144062,0.24720933,0.22334516,0.10393702,0.07163924,0.19779115,0.23523374,-0.23211687,-0.00081684,-0.23935382],[-0.17558813,0.36527249,0.01755761,-0.02944953,0.32917446,-0.01494979,-0.16100702,-0.14109205,-0.13375804,0.1362277,0.20464613,0.22718694,-0.13289251,0.05476199,0.13290327,0.19977444,-0.07752938,-0.15124107,-0.06172759,-0.24076031,0.31739511,-0.22663193,-0.25037957,0.16966565,-0.00865776,0.24682298,-0.17609733,-0.26770744,-0.06831942,-0.36967798,-0.16165041,0.01020549]],"b2":[0.04395865,0.07463808,0.09431984,-0.2901328,-0.19940303,0.05614513,-0.32941499,-0.03755079,-0.31304108,-0.2453062,-0.0251636,-0.20764832,-0.01219083,0.18648113,0.16674099,-0.16133361],"W3":[-0.54330082,-0.41127513,0.24464832,0.20763537,-0.7152843,0.59574765,-0.62984112,0.14769035,0.29714856,0.39988998,0.21132556,0.39092564,-0.16703517,0.32569272,-0.53670183,0.46046868],"b3":0.11699323},"male":{"W1":[[-0.19493133,-0.03625914,-0.02492233,0.14511268,-0.25930702,0.07168922,0.14394279,-0.08386014,0.36544219,-0.2952012,-0.17782303,-0.24218154,0.19110032,0.09238701,-0.00385732,0.03816302,0.17974888,-0.16335448,0.02751818,-0.18097809,0.11430373,-0.12560667,-0.08724608],[0.52524026,0.18443204,0.06093884,-0.15576673,0.02099905,0.12308184,-0.0238294,-0.08631768,0.0818775,0.05673702,0.09495898,-0.03828134,0.19564456,-0.14002274,-0.00327265,0.04019955,0.02715259,-0.19367152,0.00429192,0.20549139,-0.02766924,0.02789596,0.14720054],[0.11259956,0.35286467,-0.10710305,-0.42252001,0.03741116,0.02362963,-0.04086403,0.32652988,0.09780337,-0.24361259,0.20538845,-0.08389137,-0.15533335,0.04123039,0.16391827,-0.14380105,-0.29385448,-0.20214963,0.03167962,-0.27272681,-0.2728903,-0.07916787,-0.11147574],[-0.04839599,0.16517223,0.12393641,-0.20282069,-0.23559073,0.1279616,-0.1101663,-0.09321673,-0.31288005,-0.35128775,-0.21005448,-0.05813666,-0.26073378,0.15316206,-0.00653794,0.02807199,-0.26611948,0.08665251,-0.09097026,0.13821947,-0.11627184,0.24640537,0.1701152],[0.07105417,-0.18299433,-0.19030878,-0.27346348,-0.16961901,-0.30528377,0.01136838,0.06697571,0.09419132,0.25024927,0.24159932,-0.10551377,0.33997376,0.08661951,-0.01391537,0.07834878,-0.09679834,0.08462381,0.03453354,0.07644971,-0.28733103,-0.07406357,-0.03231209],[-0.02816299,-0.28142774,0.34582304,0.11950559,-0.0853334,0.10128851,0.11508417,0.05625113,0.44269611,0.05457539,0.30368832,0.20338417,0.12319061,0.20656023,0.23802541,0.15413747,0.18369661,-0.02189322,0.09396802,-0.08931641,0.25639384,-0.07691074,0.01386628],[-0.21273859,0.0369524,0.08444487,0.05709452,0.2433026,-0.05905497,0.21309021,0.14805549,-0.23794313,-0.28200215,-0.0848906,0.09442346,0.21132712,-0.38177615,-0.09149119,-0.33446228,0.36113249,0.10364411,0.1733549,0.30095619,0.25767649,0.42090779,0.07098829],[0.21133938,-0.12150691,-0.19415287,0.04503631,-0.14730796,-0.04147405,0.08286513,-0.03577956,-0.0273422,-0.06278027,-0.00736664,-0.06619982,-0.08314917,0.08868334,-0.0570984,-0.11784123,-0.1735862,0.07874775,-0.07032693,0.17586348,0.14206112,0.17267151,0.07729803],[0.06387963,-0.28599867,-0.1192679,0.23044576,-0.00238213,-0.15815392,0.00571688,0.08116437,0.19932699,-0.03509549,-0.11486378,-0.21193016,-0.07868246,-0.28650128,-0.16714237,-0.04458677,0.06030076,-0.05824102,0.1423914,-0.13035441,0.08583532,0.16104916,0.0122347],[0.26818848,0.00125764,0.13051311,-0.20769952,0.15985048,0.02122959,-0.13846373,0.01592323,0.1796779,-0.12837819,-0.04871762,0.18272163,0.17113723,-0.16855886,0.03133642,0.18124042,-0.00173153,0.05803187,-0.05125606,-0.0294491,0.01212643,-0.07523639,-0.03637773],[-0.40926728,-0.17003016,0.16742548,0.00932452,-0.0313169,0.22409388,-0.11342668,0.0045293,-0.00014145,-0.03475873,-0.03297682,0.22220187,-0.25472617,0.31271073,-0.06145299,-0.18187381,0.31192752,0.36050677,-0.07688467,0.01231523,-0.27846169,-0.17203074,-0.0231168],[0.30539749,0.15456029,0.11310377,0.12394648,0.34292365,-0.27093954,0.07690795,0.19310712,0.32692523,-0.20368732,0.2317806,0.05653156,0.46313086,0.11897992,-0.23564674,0.05095981,0.07183588,-0.21973167,-0.21097893,0.15317588,0.26944056,0.02211273,0.14056198],[0.39779418,0.03017015,0.28581001,-0.30751456,0.27620744,-0.16200174,0.02062222,-0.08882324,0.0012053,-0.11266039,-0.25447466,0.33818019,0.30334811,-0.14312348,-0.21674312,-0.06251543,0.11522607,-0.283371,-0.20977421,-0.07001634,-0.02267501,0.168587,0.10626801],[-0.12838893,0.1603097,-0.24287493,-0.36739663,-0.13042897,-0.28016482,-0.17743089,-0.23825682,-0.10137066,0.08777727,-0.18341799,0.05032669,0.00052095,-0.28269047,0.087466,-0.13546674,-0.11426151,-0.27358063,-0.32697844,-0.1459419,0.10567731,0.04309833,0.31939004],[-0.33165805,-0.08544207,-0.1278885,0.04948112,-0.03365878,0.15311794,-0.16214119,0.0767377,0.14217374,-0.09619322,-0.39764254,0.10043931,0.11830222,-0.12586519,0.03937962,0.01536381,0.01755069,0.06083824,0.04464987,-0.06334293,0.06482324,0.01584098,-0.10942493],[-0.30473845,0.03754224,-0.29437143,-0.09714876,-0.09767964,-0.09899966,0.08025382,-0.18825603,0.14694099,-0.09160967,-0.35858053,-0.00526705,0.02805089,0.10033242,-0.00176578,-0.05758758,-0.08349063,-0.09031198,0.04820468,0.04683983,0.11106767,-0.16323983,0.0458207],[0.11194809,0.00819777,0.06601564,0.27817505,-0.1027236,-0.03438847,-0.16953935,0.24818377,0.34142186,0.23125438,0.2841565,-0.04663777,-0.07501878,0.03932809,0.09231167,0.14139563,-0.15261855,0.00321475,-0.2415032,0.02384984,-0.17968645,0.18216009,0.08420743],[-0.0656944,-0.17199523,0.0176293,0.32111897,-0.3647977,-0.04084411,-0.19567608,0.28394145,0.22852745,0.20245705,0.04551997,-0.38357031,0.23074965,-0.2400511,-0.04510302,-0.27449132,0.18694771,-0.23247252,0.0300532,-0.06338222,0.02904642,-0.23479942,-0.19114111],[-0.11213829,0.26939025,-0.10937686,0.18102367,0.06530024,0.37379903,0.02962796,0.21409538,0.01106907,-0.1204456,-0.06865898,-0.34147527,0.00317843,-0.28618456,-0.07024595,0.10326528,0.22312636,-0.20481196,0.12823061,-0.08540405,-0.02934953,-0.02994763,-0.15771724],[-0.08547812,0.24334775,-0.21101219,0.126931,0.0473614,-0.27905923,0.03606672,-0.06393256,0.08058872,0.01819411,-0.21434993,-0.08857036,0.30322473,0.23229626,0.2288065,0.22807601,0.16004974,-0.3207514,0.08579607,0.03713623,-0.09739032,-0.07396716,0.17198043],[0.10967829,0.24493283,0.00159078,0.06622239,-0.26324891,-0.19616168,0.23054751,-0.23049584,0.21767413,0.26430817,0.08750376,-0.08776542,-0.0628931,-0.27041906,-0.12164459,0.16469458,0.20802608,-0.0416302,0.11668401,-0.20802625,-0.1349163,-0.03306636,0.01844253],[-0.33909228,0.22082945,-0.147224,-0.14377986,-0.13664347,-0.01771104,-0.23074185,0.17862298,0.10815758,-0.18540269,-0.06122165,-0.02313466,0.11264726,0.13543969,0.24017616,0.00720736,0.04950734,0.07666796,-0.09190891,-0.05063791,0.34275832,-0.12955888,0.12401857],[-0.1672583,0.0135408,0.08921326,0.26803081,0.20964935,0.34506676,0.07525848,-0.06382469,0.10347529,-0.11993253,-0.2957432,-0.29876867,-0.05921156,0.14585421,-0.19559614,-0.23325685,0.1067766,-0.18934904,-0.16608897,0.14319393,0.02557595,-0.28687763,-0.20963975],[-0.21246587,0.19941286,0.23583374,-0.02968361,-0.01489157,0.32478736,-0.10657284,0.2125364,0.04262755,-0.21747877,0.09659677,-0.19711001,-0.4407131,-0.23839758,0.14200939,0.10455297,0.18634013,0.12930911,-0.09938052,0.10336007,-0.00799641,0.14899123,0.23691659],[0.03628393,-0.22301544,0.16201323,0.19719937,-0.20329522,0.08587327,-0.03425469,0.17235429,0.31905576,-0.46057735,-0.20312258,0.10340796,0.28032746,-0.48528333,-0.13051364,0.02039255,0.12574433,0.16944388,-0.07461534,0.07683085,-0.24874946,-0.01243776,-0.03774118],[0.13407776,-0.06132592,-0.02959337,0.32137274,0.06276493,0.08036659,0.05916294,0.15418525,-0.12483199,0.32418447,0.09719828,-0.09264614,-0.26931973,0.30663764,0.21837811,-0.06922711,-0.14199966,0.05273976,0.0075207,0.01472393,-0.19273563,0.00223099,-0.16668671],[-0.00347423,-0.28089732,-0.19738142,-0.01128467,0.09526328,-0.06006053,-0.07191374,0.10288407,-0.27266791,0.26663836,-0.08764356,0.10137353,0.03454132,-0.31586726,-0.10547515,0.08552593,-0.06386536,-0.08558344,-0.13371936,-0.319253,-0.09887904,-0.20334336,-0.19098261],[-0.11877256,-0.10480783,-0.02777223,-0.00629634,-0.14944331,0.19262436,0.04815074,-0.09986634,-0.24053228,0.08226021,-0.31363707,-0.2628176,0.17188692,-0.14226854,0.10303433,-0.03504755,-0.00307232,0.15531083,-0.05036299,-0.07889585,-0.38522681,0.023182,0.1433714],[0.02490509,-0.09567161,0.12403157,-0.06858539,0.07645188,0.08932328,0.0545003,0.18445718,0.0061046,-0.14309981,-0.14793178,-0.31008623,0.25225989,0.22053326,-0.15067519,0.19427986,0.297055,-0.0658044,-0.16708752,-0.01077377,-0.04740773,0.03524849,0.08643831],[-0.4574554,-0.08092847,0.11886102,-0.06713336,0.10596352,-0.27112736,-0.06883454,-0.07963407,-0.2656042,0.19999444,0.13268302,0.16785757,0.07601479,0.54147946,-0.0323982,0.15560274,0.17350117,0.13385972,-0.10764002,-0.30575405,-0.45641684,-0.43556079,-0.01432083],[-0.20047895,-0.01217932,-0.04325443,0.25583563,-0.10926581,0.11038076,-0.06376384,-0.04617558,0.13311935,-0.33789744,-0.22489052,-0.24535603,-0.07939532,0.07653559,0.02380981,0.01076793,0.00532092,0.15324324,0.0058802,-0.06603881,-0.04658033,-0.00467659,0.01140433],[-0.18538242,0.02999798,-0.02086079,0.15260031,0.13798398,0.04037504,-0.06342174,0.01221884,0.09569583,-0.02924681,0.24412654,0.30562954,0.11594469,0.19563469,-0.01591993,-0.04562604,0.10921445,0.38655979,-0.02244244,0.1304099,0.21115074,-0.16763732,0.14931365]],"b1":[0.12595667,0.15328248,0.0052861,-0.1280133,-0.01097964,-0.05896437,0.17368219,-0.02478556,-0.14881406,0.26710647,-0.2093198,0.27621803,0.2806789,0.10510414,-0.28351464,0.280737,0.17919799,-0.1203395,-0.179253,0.2439367,0.08772447,0.04739779,0.24918403,-0.03955621,-0.07475347,-0.15654248,-0.40891386,0.21601659,-0.33673419,-0.03794876,0.40955078,0.28372291],"W2":[[-0.06227066,-0.26473861,0.1369445,0.03593686,-0.19753461,0.03888487,-0.06289299,-0.17633762,-0.0324892,0.02049447,0.0675875,-0.24628883,-0.26044201,0.12891349,-0.10715428,-0.12716889,0.28488344,-0.02627336,-0.03166029,-0.28064709,0.29874275,0.19440687,0.21318017,0.25423854,0.21086567,-0.34158351,-0.31196557,0.24040582,-0.31955536,-0.1687779,0.26520167,-0.34479954],[0.2519695,0.23359456,-0.22934283,-0.00304236,-0.23162236,0.06363335,0.03812173,0.20010944,0.24377456,-0.15063409,-0.1663883,-0.39942151,0.03791519,-0.25543169,0.11272364,-0.05626843,-0.06259505,0.20922826,-0.17662986,-0.3133323,-0.22921508,-0.18074259,0.22249105,-0.00600826,0.11812964,-0.06816493,0.28581401,-0.24933689,0.07116087,-0.30574201,0.21514591,-0.36697262],[-0.32113248,0.10690261,0.0779519,-0.29649934,-0.02965602,-0.26620303,-0.2208189,-0.21190582,-0.28048855,0.12858378,-0.28850436,-0.20841958,-0.14559354,-0.05945563,-0.13445538,-0.22625124,0.30248254,-0.16018686,-0.11782846,0.36408187,0.35015533,-0.08082136,0.23521459,0.011136,0.11322823,0.04802367,0.11505168,-0.35995047,0.10005985,0.03024533,0.19440352,-0.06440627],[0.19270529,-0.02730481,0.09530337,-0.09719391,-0.0812586,0.17400049,-0.19233912,-0.11501667,-0.22808817,0.02445169,0.19717023,0.33393597,-0.05078847,0.00915269,-0.34027019,0.33782857,0.27997934,0.03049484,0.09774444,-0.05061551,0.12757803,0.14062326,0.27863723,0.06322378,0.10675576,0.29798628,-0.30311621,-0.2008708,-0.17885015,-0.12861701,-0.07196509,0.01746254],[-0.23112239,-0.09271288,-0.0879415,0.28077627,0.28464585,-0.24410996,0.25548952,0.32880625,-0.16039401,-0.2640072,0.34006215,0.18569588,-0.17420527,-0.03491814,0.40189002,0.31248106,-0.19915848,0.24714743,0.18915284,-0.10382979,0.00367416,0.09961754,0.0343366,0.26969267,-0.24886713,0.1394475,-0.18978092,0.08472709,0.22605059,0.29703881,-0.14950649,-0.01450703],[-0.12406425,0.33103792,0.19363252,-0.26743285,-0.12115922,0.23683498,0.31882664,-0.12040524,-0.27969158,0.35595856,-0.01475011,0.09782802,-0.11783696,0.14503332,-0.28299886,-0.37772936,0.27099972,0.10672066,0.23779798,0.09364326,0.00164849,-0.19779006,0.00107127,-0.10785779,0.32040621,-0.13924393,0.15772999,0.19779466,-0.19957914,-0.09976758,-0.27976396,-0.16591645],[0.27324126,-0.2823091,0.21319971,-0.20702406,0.11741685,-0.13870733,-0.10860586,0.0290849,-0.15254679,0.13002974,-0.21936466,0.03345631,0.19497138,-0.20026803,0.38347017,0.15968933,-0.34369952,-0.20623299,0.15332046,-0.07430887,-0.05897127,0.14283174,-0.31415276,0.21877735,0.25027969,0.06976801,-0.37871915,0.14689466,-0.14557554,0.4116562,0.13668713,0.11802073],[-0.24241325,0.14383902,0.28928125,-0.12136677,0.09019024,-0.13117369,-0.15410513,-0.02146031,0.06256329,-0.13070525,-0.10718403,0.19455156,-0.13867991,-0.4090383,-0.1447339,0.1818715,0.13835708,-0.18946986,-0.15994887,0.28938424,-0.13755141,-0.10679655,-0.06294763,-0.01132407,-0.21079285,0.05112363,0.11839427,-0.1242472,0.38237488,-0.32787745,-0.18700819,0.21553905],[-0.25488624,0.06387252,-0.08109326,0.06158192,-0.31968576,-0.31395162,0.09414478,-0.20906351,-0.09327174,0.3358499,-0.34272608,-0.18766614,0.05738572,0.10272356,-0.29862251,-0.29803314,-0.13716258,0.2772148,-0.127291,0.14682166,-0.11466127,-0.22312039,-0.09595419,-0.24480209,0.11060987,0.19556587,-0.00959369,-0.22773152,-0.01798093,0.2260396,-0.4291291,0.1956259],[0.08438826,0.13608016,-0.29984847,0.28780746,0.1127137,0.04104162,-0.04252315,-0.20827801,0.21635034,0.07813828,0.28278116,0.34531238,0.0322204,-0.08867549,-0.05079864,-0.10670412,-0.19388782,-0.36112849,0.09272474,-0.30337621,-0.17228943,-0.0149593,-0.14056894,0.23631987,-0.36219718,-0.26170309,0.1045478,0.26234539,0.15578361,0.17769862,-0.19995805,-0.284942],[0.087824,-0.29026283,0.35714449,-0.10642619,-0.24756315,0.06318766,-0.32258425,0.11786292,0.14583175,0.36669349,-0.26077117,-0.00470316,0.13741013,0.06080577,0.17671432,0.22717116,-0.24816305,0.24753225,-0.16895848,-0.08295507,0.22249642,0.06245184,0.21356964,0.18687527,-0.19419665,0.1902472,-0.26935777,-0.125764,-0.03194899,0.17517205,-0.40982529,0.02576837],[0.01466345,0.32066652,0.13905515,-0.05436968,0.26679428,-0.30382075,-0.20644172,0.27822586,-0.11749566,0.28369057,0.0783579,-0.0427181,0.31461649,-0.1250153,0.07312807,-0.46093331,0.16098878,0.0274031,-0.2121492,0.15415579,-0.07837874,0.04084526,0.01856348,0.07151156,0.09736986,0.00862964,0.35813449,-0.10642522,-0.03194179,0.20930298,-0.15010676,-0.27081769],[0.22083985,0.23815227,-0.26910212,0.1508879,-0.19993766,0.15718983,0.11828018,0.34369596,-0.03735675,-0.15414712,-0.1569038,-0.04699411,0.11612584,-0.10478784,0.31229112,0.25724575,-0.16612162,0.34267306,-0.0607983,0.33519659,-0.34450944,-0.26662331,-0.34723259,0.20538871,-0.1719962,0.34304165,0.34305521,-0.1554897,0.30402596,0.20568998,-0.03872306,-0.21597616],[-0.02961209,0.08601093,0.29693792,-0.02087722,-0.03727309,-0.0087519,0.06427569,-0.13767698,-0.18436668,-0.2696527,0.06115731,-0.28162341,-0.2072541,0.15356523,0.05285136,-0.09880995,0.2043076,0.25725558,-0.25425461,-0.13661438,0.31434666,0.28622537,-0.1189373,0.17915834,0.13291906,-0.05794501,0.40477941,0.12634003,-0.05685263,0.10610872,0.03966211,0.36646603],[-0.18246385,0.09821422,0.24873069,-0.15566969,-0.32357098,0.01937366,-0.28218803,0.02216959,-0.0324992,-0.23692764,0.0704238,-0.28014415,-0.30100165,0.25636855,0.1812352,0.19785606,-0.33839961,0.11752533,-0.19411614,0.12311634,0.20199104,-0.14730682,0.06791187,0.2338973,0.19740891,0.11089506,0.08299102,0.19430381,0.22572052,-0.20524414,-0.01114766,-0.24320604],[-0.17252088,0.36043506,0.01835984,-0.01337771,0.30547494,-0.02076884,-0.1578999,-0.19091281,-0.22850691,0.1331196,0.22001787,0.23008149,-0.13123227,0.0546719,0.13432443,0.2332042,-0.0888028,-0.1500654,-0.07007522,-0.2366013,0.30421118,-0.23569834,-0.22347959,0.19932981,0.01637476,0.22225151,-0.19252197,-0.27038753,-0.06049762,-0.35985238,-0.15596647,0.03411258]],"b2":[0.03398081,0.07909145,0.10411856,-0.29332442,-0.19335475,0.05609027,-0.34121016,-0.02862448,-0.29979285,-0.24792051,-0.02180145,-0.22226265,-0.01322735,0.17689806,0.16427784,-0.15840213],"W3":[-0.5059273,-0.40990584,0.22554489,0.21841179,-0.66810758,0.59240279,-0.62445491,0.12479362,0.28436546,0.41311122,0.18596475,0.3846684,-0.1701335,0.31518481,-0.53831924,0.45026174],"b3":0.11608987}};
+
+function tanh(x){return Math.tanh(x)}
+function fwd(x,m){
+  var h1=m.W1.map(function(w,i){return tanh(w.reduce(function(s,wj,j){return s+wj*x[j]},0)+m.b1[i])});
+  var h2=m.W2.map(function(w,i){return tanh(w.reduce(function(s,wj,j){return s+wj*h1[j]},0)+m.b2[i])});
+  return Math.exp(m.W3.reduce(function(s,w,j){return s+w*h2[j]},0)+m.b3);
+}
+
+function preventRisk(sx,age,tc,hdl,sbp,bmi,egfr,dm,smoke,bptx,statin){
+  var nh=tc-hdl;
+  var ac=(age-55)/10;
+  var nhc=(nh-135)/38.67;
+  var hc=(hdl-50)/38.67;
+  var sh=Math.max(sbp-110,0)/20;
+  var sl=Math.min(sbp-110,0)/20;
+  var bl=(Math.min(bmi,30)-25)/5;
+  var bh=Math.max(bmi-30,0)/5;
+  var eh=(Math.min(egfr,60)-90)/(-15);
+  var el2=Math.max(60-egfr,0)/15;
+  var x=[ac,ac*ac,nhc,hc,sh,sl,bl,bh,eh,el2,dm,smoke,bptx,statin,
+          ac*nhc,ac*hc,ac*sh,ac*dm,ac*smoke,ac*bptx,ac*statin,ac*eh,sh*bptx];
+  return Math.min(Math.max(fwd(x,sx==='f'?NN.female:NN.male),0.01),99.9);
+}
+
+// ── State ──
+var S={ascvd:null,vhr:0,tn:null,sex:null,risk:null,enh:0};
+
+// ── Scroll helper ──
+function scrollTo(id){
+  setTimeout(function(){
+    var el=document.getElementById(id);
+    if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+  },60);
+}
+
+// ── Screen 1 ──
+function setAscvd(v){
+  S.ascvd=v;
+  document.getElementById('btn-yes').className='gate-btn'+(v==='yes'?' sel-yes':'');
+  document.getElementById('btn-no').className='gate-btn'+(v==='no'?' sel-no':'');
+  var secEl=document.getElementById('sec');
+  var priEl=document.getElementById('pri');
+  if(v==='yes'){
+    secEl.classList.remove('hidden');
+    priEl.classList.add('hidden');
+    scrollTo('s2-sec');
+  } else {
+    priEl.classList.remove('hidden');
+    secEl.classList.add('hidden');
+    scrollTo('s2-pri');
+  }
+}
+
+// ── Checklist (VHR) ──
+function ckToggle(el,group){
+  el.classList.toggle('on');
+  if(group==='vhr'){
+    S.vhr=document.querySelectorAll('#vhr-list .ck.on').length;
+    renderSecResult();
+  }
+}
+
+function renderSecResult(){
+  var el=document.getElementById('sec-result');
+  if(S.vhr>0){
+    el.innerHTML='<div class="result r-vhigh">'+
+      '<div class="res-lbl">⚠ Very High Risk — Secondary Prevention</div>'+
+      '<div class="res-goal">LDL-C Goal: &lt;55 mg/dL</div>'+
+      '<div class="res-sub">Non-HDL-C goal: &lt;85 mg/dL</div>'+
+      '<div class="res-chips"><span class="res-chip">LDL-C &lt;55 mg/dL</span><span class="res-chip">Non-HDL-C &lt;85 mg/dL</span></div>'+
+      '<div class="res-rec"><strong>Initiate or intensify high-intensity statin.</strong> Add ezetimibe if goal not reached on maximally tolerated statin. Consider PCSK9 inhibitor if still above goal.</div>'+
+      '</div>';
+    scrollTo('sec-result');
+  } else {
+    el.innerHTML='<div class="result r-high">'+
+      '<div class="res-lbl">Secondary Prevention — Not Very High Risk</div>'+
+      '<div class="res-goal">LDL-C Goal: &lt;70 mg/dL</div>'+
+      '<div class="res-sub">Non-HDL-C goal: &lt;100 mg/dL</div>'+
+      '<div class="res-chips"><span class="res-chip">LDL-C &lt;70 mg/dL</span><span class="res-chip">Non-HDL-C &lt;100 mg/dL</span></div>'+
+      '<div class="res-rec"><strong>Initiate or intensify statin</strong> to achieve goal. Add ezetimibe if insufficient. Consider PCSK9 inhibitor if goal not reached on maximally tolerated statin ± ezetimibe.</div>'+
+      '</div>';
+    scrollTo('sec-result');
+  }
+}
+
+// ── Treat-now ──
+function tnToggle(id){
+  var prev=S.tn;
+  if(prev) document.getElementById(prev).classList.remove('on');
+  if(prev===id){
+    S.tn=null;
+    document.getElementById('tn-result').innerHTML='';
+    document.getElementById('prevent-card').classList.remove('hidden');
+    document.getElementById('enh-card').classList.add('hidden');
+    return;
+  }
+  S.tn=id;
+  document.getElementById(id).classList.add('on');
+  document.getElementById('prevent-card').classList.add('hidden');
+  document.getElementById('enh-card').classList.add('hidden');
+  document.getElementById('pri-result').innerHTML='';
+
+  var map={
+    'tn-ldl':['LDL-C ≥190 mg/dL','High-intensity statin therapy','Rule out secondary causes. Evaluate for familial hypercholesterolemia. Treat regardless of calculated risk score.'],
+    'tn-dm':['Age 40–75 with Diabetes','At minimum moderate-intensity statin','Consider high-intensity statin for patients with multiple additional ASCVD risk factors. Reassess annually.'],
+    'tn-hiv':['Age ≥40 with HIV','Start lipid-lowering therapy','Check ART drug interactions (prefer pravastatin or rosuvastatin). Note: PREVENT may underestimate risk in HIV.'],
+    'tn-ckd':['Age ≥40 with CKD (eGFR <60)','Start lipid-lowering therapy','Adjust statin dose for eGFR. Simvastatin/ezetimibe has specific CKD evidence (SHARP trial).']
+  };
+  var d=map[id];
+  document.getElementById('tn-result').innerHTML=
+    '<div class="result r-tn">'+
+    '<div class="res-lbl">✓ Treat-Now Group — No Calculator Needed</div>'+
+    '<div class="res-goal">'+d[1]+'</div>'+
+    '<div class="res-sub">'+d[0]+'</div>'+
+    '<div class="res-divider"></div>'+
+    '<div class="res-rec"><strong>Note:</strong> '+d[2]+'</div>'+
+    '</div>';
+  scrollTo('tn-result');
+}
+
+// ── Sex ──
+function setSex(s){
+  S.sex=s;
+  document.getElementById('sx-f').classList.toggle('on',s==='f');
+  document.getElementById('sx-m').classList.toggle('on',s==='m');
+  calc();
+}
+
+// ── Toggles ──
+function togBin(id){
+  document.getElementById(id).classList.toggle('on');
+  calc();
+}
+
+// ── PREVENT calc ──
+function calc(){
+  if(S.tn) return;
+  var age=parseFloat(document.getElementById('p-age').value);
+  var tc=parseFloat(document.getElementById('p-tc').value);
+  var hdl=parseFloat(document.getElementById('p-hdl').value);
+  var sbp=parseFloat(document.getElementById('p-sbp').value);
+  var bmi=parseFloat(document.getElementById('p-bmi').value);
+  var egfr=parseFloat(document.getElementById('p-egfr').value);
+  var dm=document.getElementById('tog-dm').classList.contains('on')?1:0;
+  var smoke=document.getElementById('tog-smoke').classList.contains('on')?1:0;
+  var bptx=document.getElementById('tog-bptx').classList.contains('on')?1:0;
+  var statin=document.getElementById('tog-statin').classList.contains('on')?1:0;
+  var pr=document.getElementById('prevent-result');
+  var enhCard=document.getElementById('enh-card');
+
+  if(!S.sex||isNaN(age)||isNaN(tc)||isNaN(hdl)||isNaN(sbp)||isNaN(bmi)||isNaN(egfr)){
+    pr.innerHTML='';
+    enhCard.classList.add('hidden');
+    document.getElementById('pri-result').innerHTML='';
+    S.risk=null;
+    return;
+  }
+
+  var a=Math.max(30,Math.min(79,age));
+  var t=Math.max(130,Math.min(320,tc));
+  var h=Math.max(20,Math.min(Math.min(t-5,100),hdl));
+  var s=Math.max(90,Math.min(200,sbp));
+  var b=Math.max(18.5,Math.min(39.9,bmi));
+  var e=Math.max(15,Math.min(140,egfr));
+
+  var r=preventRisk(S.sex,a,t,h,s,b,e,dm,smoke,bptx,statin);
+  S.risk=r;
+
+  var tier=r<3?0:r<5?1:r<10?2:3;
+  var tiers=[['rlow','Low'],['rbord','Borderline'],['rint','Intermediate'],['rhigh','High']];
+  var tc2=tiers[tier];
+
+  var prevWasEmpty=(pr.innerHTML==='');
+  pr.innerHTML='<div class="risk-box '+tc2[0]+'">'+
+    '<div class="risk-label">'+tc2[1]+' risk</div>'+
+    '<div class="risk-pct">'+r.toFixed(1)+'%</div>'+
+    '<div class="risk-tier-lbl">10-year ASCVD risk (PREVENT)</div>'+
+    '</div>';
+
+  // Show enhancers for tier 1-2 only
+  var needEnh=(tier===1||tier===2);
+  var enhWasHidden=enhCard.classList.contains('hidden');
+  enhCard.classList.toggle('hidden',!needEnh);
+  if(needEnh && enhWasHidden) scrollTo('enh-card');
+
+  if(tier===0||tier===3){
+    S.enh=0;
+    renderPriResult(tier,r,0);
+    if(prevWasEmpty) scrollTo('pri-result');
+  } else {
+    renderPriResult(tier,r,S.enh);
+  }
+}
+
+// ── Risk enhancers ──
+function enhToggle(el){
+  el.classList.toggle('on');
+  var box=el.querySelector('.enh-box');
+  if(el.classList.contains('on')){
+    box.style.background='var(--amber)';box.style.borderColor='var(--amber)';
+  } else {
+    box.style.background='';box.style.borderColor='';
+  }
+  S.enh=document.querySelectorAll('#enh-card .enh.on').length;
+  if(S.risk!==null){
+    var tier=S.risk<3?0:S.risk<5?1:S.risk<10?2:3;
+    renderPriResult(tier,S.risk,S.enh);
+  }
+}
+
+function renderPriResult(tier,r,enh){
+  var el=document.getElementById('pri-result');
+  var cls,lbl,goal,sub,chips,rec;
+  if(tier===0){
+    cls='r-low';lbl='Low Risk — <3% 10-Year ASCVD';goal='Lifestyle Therapy Only';
+    sub='No pharmacologic lipid-lowering therapy indicated';chips='';
+    rec='<strong>Dietary and lifestyle modifications:</strong> heart-healthy diet, aerobic exercise, weight management, smoking cessation. <strong>Reassess in 4–6 years.</strong>';
+  } else if(tier===1){
+    cls='r-bord';lbl='Borderline Risk — 3–<5% 10-Year ASCVD';
+    goal=enh>0?'Consider Statin Therapy':'Statin Reasonable';
+    sub='LDL-C goal: <100 mg/dL';
+    chips='<span class="res-chip">LDL-C <100 mg/dL</span>';
+    rec=enh>0
+      ?'<strong>'+enh+' risk enhancer'+(enh>1?'s':'')+' present</strong> — risk enhancers favor initiating statin. Engage in shared decision-making weighing benefit, risk, cost, and patient preference.'
+      :'No risk enhancers identified. Statin is reasonable but not required. Engage in shared decision-making; reassess if risk factors change.';
+  } else if(tier===2){
+    cls='r-int';lbl='Intermediate Risk — 5–<10% 10-Year ASCVD';
+    goal=enh>0?'Statin Strongly Recommended':'Statin Recommended';
+    sub='LDL-C goal: <100 mg/dL';
+    chips='<span class="res-chip">LDL-C <100 mg/dL</span>';
+    rec=enh>0
+      ?'<strong>'+enh+' risk enhancer'+(enh>1?'s':'')+' present</strong> — risk enhancers strongly favor statin. Initiate moderate-to-high intensity statin after clinician-patient discussion.'
+      :'<strong>Statin recommended</strong> after clinician-patient discussion. Risk enhancers, if present, further support the indication.';
+  } else {
+    cls='r-high';lbl='High Risk — ≥10% 10-Year ASCVD';goal='Initiate Statin Therapy';
+    sub='LDL-C goal: <70 mg/dL';
+    chips='<span class="res-chip">LDL-C <70 mg/dL</span>';
+    rec='<strong>Initiate statin; treat intensively.</strong> High-intensity statin preferred (atorvastatin 40–80 mg or rosuvastatin 20–40 mg). Add ezetimibe if LDL-C goal not reached on maximally tolerated statin.';
+  }
+  var prev=el.innerHTML;
+  el.innerHTML='<div class="result '+cls+'">'+
+    '<div class="res-lbl">'+lbl+'</div>'+
+    '<div class="res-goal">'+goal+'</div>'+
+    '<div class="res-sub">'+sub+'</div>'+
+    (chips?'<div class="res-chips">'+chips+'</div>':'')+
+    '<div class="res-rec">'+rec+'</div>'+
+    '</div>';
+  if(!prev) scrollTo('pri-result');
+}
+
+// ── Reset ──
+function resetAll(){
+  S={ascvd:null,vhr:0,tn:null,sex:null,risk:null,enh:0};
+  ['btn-yes','btn-no'].forEach(function(id){document.getElementById(id).className='gate-btn'});
+  document.getElementById('sec').classList.add('hidden');
+  document.getElementById('pri').classList.add('hidden');
+  document.querySelectorAll('.ck.on').forEach(function(el){el.classList.remove('on')});
+  document.getElementById('sec-result').innerHTML='';
+  ['tn-ldl','tn-dm','tn-hiv','tn-ckd'].forEach(function(id){document.getElementById(id).classList.remove('on')});
+  document.getElementById('tn-result').innerHTML='';
+  document.getElementById('prevent-card').classList.remove('hidden');
+  document.getElementById('prevent-result').innerHTML='';
+  document.getElementById('enh-card').classList.add('hidden');
+  document.getElementById('pri-result').innerHTML='';
+  document.querySelectorAll('.enh.on').forEach(function(el){
+    el.classList.remove('on');
+    el.querySelector('.enh-box').style.background='';
+    el.querySelector('.enh-box').style.borderColor='';
+  });
+  ['sx-f','sx-m'].forEach(function(id){document.getElementById(id).classList.remove('on')});
+  ['p-age','p-tc','p-hdl','p-sbp','p-bmi','p-egfr'].forEach(function(id){document.getElementById(id).value=''});
+  ['tog-dm','tog-smoke','tog-bptx','tog-statin'].forEach(function(id){document.getElementById(id).classList.remove('on')});
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AHS Clinical Tools</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0f2340;--navy-mid:#1a3557;--border:#d4dce8;--bg:#f4f7fb;
+  --surface:#fff;--text:#0f2340;--text-mid:#3a5070;--text-light:#6a82a0;
+  --blue:#1a6fa8;--blue-bg:#edf4fb;--blue-bd:#a8c8e8;
+  --teal:#1a7a6a;--r:10px;--rs:6px
+}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.6}
+
+/* Header */
+.header{background:var(--navy);color:#fff;padding:28px 20px 32px}
+.header-inner{max-width:700px;margin:0 auto}
+.org{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:10px}
+.header h1{font-size:24px;font-weight:700;color:#fff;letter-spacing:-.01em;margin-bottom:6px}
+.header p{font-size:13px;color:rgba(255,255,255,.55);max-width:480px;line-height:1.5}
+
+/* Main */
+main{max-width:700px;margin:0 auto;padding:28px 16px 60px}
+
+.section-label{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-light);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+
+/* Tool card */
+.tool-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden;box-shadow:0 1px 4px rgba(15,35,64,.07);transition:box-shadow .15s,transform .15s;display:block;text-decoration:none;color:inherit}
+.tool-card:hover{box-shadow:0 4px 16px rgba(15,35,64,.12);transform:translateY(-1px)}
+.tool-card-inner{display:flex;align-items:stretch}
+.tool-accent{width:5px;flex-shrink:0}
+.tool-accent-blue{background:var(--blue)}
+.tool-accent-teal{background:var(--teal)}
+.tool-accent-gray{background:var(--border)}
+.tool-content{flex:1;padding:16px 18px;display:flex;align-items:center;gap:16px}
+.tool-icon{font-size:26px;flex-shrink:0;width:40px;text-align:center}
+.tool-text{flex:1}
+.tool-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px}
+.tool-desc{font-size:12px;color:var(--text-mid);line-height:1.4}
+.tool-meta{display:flex;align-items:center;gap:8px;margin-top:5px;flex-wrap:wrap}
+.tag{font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:3px;background:#e8eef5;color:var(--text-light)}
+.tag-new{background:#e0f0e8;color:var(--teal)}
+.tool-arrow{font-size:18px;color:var(--text-light);flex-shrink:0;transition:transform .15s}
+.tool-card:hover .tool-arrow{transform:translateX(3px);color:var(--blue)}
+
+/* Coming soon card */
+.tool-card.soon{opacity:.6;cursor:default;pointer-events:none}
+.tool-card.soon:hover{transform:none;box-shadow:0 1px 4px rgba(15,35,64,.07)}
+.tag-soon{background:#f0f0f0;color:#999}
+
+/* Footer */
+.footer{max-width:700px;margin:0 auto;padding:0 16px 32px;font-size:11px;color:var(--text-light);line-height:1.5;border-top:1px solid var(--border);padding-top:14px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="org">Asian Health Services · Innovation Department</div>
+    <h1>Clinical Decision Tools</h1>
+    <p>Point-of-care reference tools for AHS clinicians. All tools reflect current evidence-based guidelines.</p>
+  </div>
+</div>
+
+<main>
+
+  <div class="section-label">Available now</div>
+
+  <a class="tool-card" href="lipid-algorithm.html">
+    <div class="tool-card-inner">
+      <div class="tool-accent tool-accent-blue"></div>
+      <div class="tool-content">
+        <div class="tool-icon">💊</div>
+        <div class="tool-text">
+          <div class="tool-name">Lipid Management Algorithm</div>
+          <div class="tool-desc">2026 ACC/AHA dyslipidemia guidelines. Secondary and primary prevention pathways with embedded PREVENT calculator and risk-stratified LDL-C goals.</div>
+          <div class="tool-meta">
+            <span class="tag tag-new">New</span>
+            <span class="tag">2026 ACC/AHA</span>
+            <span class="tag">PREVENT 2023</span>
+          </div>
+        </div>
+        <div class="tool-arrow">›</div>
+      </div>
+    </div>
+  </a>
+
+  <div class="section-label" style="margin-top:28px">Coming soon</div>
+
+  <div class="tool-card soon">
+    <div class="tool-card-inner">
+      <div class="tool-accent tool-accent-gray"></div>
+      <div class="tool-content">
+        <div class="tool-icon">🩺</div>
+        <div class="tool-text">
+          <div class="tool-name">USPSTF Screening Reference</div>
+          <div class="tool-desc">Age- and sex-based preventive screening recommendations for primary care.</div>
+          <div class="tool-meta"><span class="tag tag-soon">Coming soon</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tool-card soon">
+    <div class="tool-card-inner">
+      <div class="tool-accent tool-accent-gray"></div>
+      <div class="tool-content">
+        <div class="tool-icon">🫁</div>
+        <div class="tool-text">
+          <div class="tool-name">Diabetes Pharmacotherapy Guide</div>
+          <div class="tool-desc">ADA 2025/2026 glucose-lowering therapy algorithm with GLP-1, SGLT2, and insulin decision support.</div>
+          <div class="tool-meta"><span class="tag tag-soon">Coming soon</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<div class="footer">
+  <span>Asian Health Services · Innovation Department · Oakland, CA</span>
+  <span>For use by trained AHS clinicians only</span>
+</div>
+
+</body>
+</html>
