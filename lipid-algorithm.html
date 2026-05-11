@@ -148,6 +148,8 @@ input[type=number]:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 
 .info a{color:var(--blue);text-decoration:none}
 .reset-btn{background:none;border:1px solid var(--border);border-radius:var(--rs);padding:5px 13px;font-family:inherit;font-size:12px;color:var(--text-light);cursor:pointer;margin-top:10px;transition:all .12s}
 .reset-btn:hover{background:var(--bg);color:var(--text-mid)}
+.back-btn{display:inline-block;margin-top:10px;background:none;border:1px solid var(--blue-bd);border-radius:var(--rs);padding:7px 14px;font-family:inherit;font-size:12px;color:var(--blue);cursor:pointer;transition:all .12s}
+.back-btn:hover{background:var(--blue-bg)}
 .footer{max-width:680px;margin:0 auto;padding:0 14px 24px;font-size:11px;color:var(--text-light);line-height:1.5;border-top:1px solid var(--border);padding-top:14px}
 .hidden{display:none!important}
 </style>
@@ -225,6 +227,7 @@ input[type=number]:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 
       <div>
         <div class="card-title">Treat-now groups</div>
         <div class="card-sub">If patient matches any group below — start therapy, no calculator needed</div>
+        <div class="card-sub" style="margin-top:4px;color:#b06020;font-style:italic">⚠ This algorithm assumes CAC scoring is not available. If CAC has been performed, use those results to guide shared decision-making.</div>
       </div>
     </div>
     <div class="card-body">
@@ -471,8 +474,19 @@ function tnToggle(id){
     '<div class="res-sub">'+d[0]+'</div>'+
     '<div class="res-divider"></div>'+
     '<div class="res-rec"><strong>Note:</strong> '+d[2]+'</div>'+
-    '</div>';
+    '</div>'+
+    '<button class="back-btn" onclick="clearTN()">← Patient does not match — go to calculator</button>';
   scrollTo('tn-result');
+}
+
+// ── Clear treat-now (back button) ──
+function clearTN(){
+  if(S.tn) document.getElementById(S.tn).classList.remove('on');
+  S.tn=null;
+  document.getElementById('tn-result').innerHTML='';
+  document.getElementById('prevent-card').classList.remove('hidden');
+  document.getElementById('enh-card').classList.add('hidden');
+  scrollTo('prevent-card');
 }
 
 // ── Sex ──
